@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -34,6 +35,13 @@ type Options struct {
 	MaxIdleConn int
 	MaxOpenConn int
 	MaxLifeTime time.Duration
+	GormConfig  gorm.Config
+}
+
+func GormConfig(c gorm.Config) Option {
+	return func(o *Options) {
+		o.GormConfig = c
+	}
 }
 
 func Host(host string) Option {

@@ -19,7 +19,7 @@ func Connect(opts ...Option) (*gorm.DB, error) {
 	)
 	// log level https://github.com/go-gorm/gorm/issues/3544
 	//db.Logger = logger.Default.LogMode(logger.Silent)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &options.GormConfig)
 	if err != nil {
 		return nil, err
 	}
