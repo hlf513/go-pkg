@@ -26,10 +26,10 @@ type Test struct {
 func TestMain(m *testing.M) {
 	var err error
 	dbTest, err = Connect(
-		Host("127.0.0.1"),
+		Host("host"),
 		Username("user"),
 		Password("pwd"),
-		Database("test"),
+		Database("dbname"),
 	)
 	if err != nil {
 		fmt.Println(err)
@@ -92,6 +92,13 @@ func TestModel_FetchByWhere(t *testing.T) {
 	})
 	assert.NoError(t, err2)
 	assert.Equal(t, 1, len(result))
+
+	var newResult Test
+	err3 := m.FetchByWhere("tests", "username", map[string]interface{}{
+		"username = ?": "user0",
+	}, &newResult)
+	assert.NoError(t, err3)
+	assert.Equal(t, uint(0), newResult.ID)
 }
 
 func TestModel_DeleteByWhere(t *testing.T) {
