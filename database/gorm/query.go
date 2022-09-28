@@ -55,10 +55,6 @@ func (m *query) CountByWhere(count *int64, opts ...database.QueryOption) error {
 	return q.Model(m.opts.Table).Count(count).Error
 }
 
-func (m *query) GetDB() *gorm.DB {
-	return m.db
-}
-
 func (m *query) buildCondition(opts ...database.QueryOption) *gorm.DB {
 	m.opts = database.NewQueryOptions(opts...)
 
