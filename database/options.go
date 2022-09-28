@@ -2,15 +2,6 @@ package database
 
 import "gorm.io/gorm/schema"
 
-const (
-	GROUP  = "group"
-	ORDER  = "order"
-	JOIN   = "join"
-	HAVING = "having"
-	OFFSET = "offset"
-	LIMIT  = "limit"
-)
-
 type QueryOption func(*QueryOptions)
 
 type QueryOptions struct {

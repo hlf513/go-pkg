@@ -3,6 +3,7 @@ package gorm
 import (
 	"fmt"
 	"github.com/hlf513/go-pkg/database"
+	"github.com/hlf513/go-pkg/database/gorm/mysql"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 	"gorm.io/plugin/soft_delete"
@@ -30,11 +31,11 @@ func (t Test) TableName() string {
 
 func TestMain(m *testing.M) {
 	var err error
-	dbTest, err = Connect(
-		Host("host"),
-		Username("user"),
-		Password("pwd"),
-		Database("dbname"),
+	dbTest, err = mysql.Connect(
+		mysql.Host("host"),
+		mysql.Username("user"),
+		mysql.Password("pwd"),
+		mysql.Database("dbname"),
 	)
 	if err != nil {
 		fmt.Println(err)

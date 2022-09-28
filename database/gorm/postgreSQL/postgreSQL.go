@@ -1,26 +1,28 @@
-package gorm
+package mysql
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func Connect(opts ...Option) (*gorm.DB, error) {
 	options := newOptions(opts...)
-	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	// refer https://gorm.io/zh_CN/docs/connecting_to_the_database.html#PostgreSQL
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=%s",
+		options.Host,
 		options.Username,
 		options.Password,
-		options.Host,
-		options.Port,
 		options.Database,
+		options.Port,
+		options.TimeZone,
 	)
 	// log level https://github.com/go-gorm/gorm/issues/3544
 	//database.Logger = logger.Default.LogMode(logger.Silent)
-	// todo driver configure
-	db, err := gorm.Open(mysql.Open(dsn), &options.GormConfig)
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	}), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
