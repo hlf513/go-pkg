@@ -1,4 +1,4 @@
-package mysql
+package clickhouse
 
 import (
 	"fmt"
