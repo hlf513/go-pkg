@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"fmt"
+	"github.com/hlf513/go-pkg/database"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 	"gorm.io/plugin/soft_delete"
@@ -23,6 +24,10 @@ type Test struct {
 	Username  string
 }
 
+func (t Test) TableName() string {
+	return "tests_202209"
+}
+
 func TestMain(m *testing.M) {
 	var err error
 	dbTest, err = Connect(
@@ -40,7 +45,7 @@ func TestMain(m *testing.M) {
 		fmt.Println(err)
 		return
 	}
-	dbTest.Table("tests").Where("id > 0").Unscoped().Delete(&Test{})
+	dbTest.Model(Test{}).Where("id > 0").Unscoped().Delete(&Test{})
 	retCode := m.Run()
 	os.Exit(retCode)
 }
@@ -49,20 +54,23 @@ func TestModel_Create(t *testing.T) {
 	var row = Test{
 		Username: "username",
 	}
-	err := NewModel(dbTest).Create("tests", &row)
+	err := NewQuery(dbTest).Create(&row)
 	assert.NoError(t, err)
 	assert.Equal(t, true, row.ID > 0)
 }
 
 func TestModel_BatchInsert(t *testing.T) {
-	var row = []Test{
+	var rows = []Test{
 		{Username: "user1"},
 		{Username: "user2"},
 	}
-	m := NewModel(dbTest)
-	err := m.BatchInsert("tests", &row, 10)
+	m := NewQuery(dbTest)
+	err := m.BatchInsert(rows,
+		database.Table(Test{}),
+		database.BatchInsertSize(1),
+	)
 	assert.NoError(t, err)
-	for _, item := range row {
+	for _, item := range rows {
 		assert.Equal(t, true, item.ID > 0)
 	}
 }
@@ -74,29 +82,27 @@ func TestModel_FetchByWhere(t *testing.T) {
 	})
 
 	var result []Test
-	m := NewModel(dbTest)
-	err := m.FetchByWhere("tests", "username", map[string]interface{}{
-		"username = ?": "user3",
-	}, &result)
+	m := NewQuery(dbTest)
+	err := m.FetchByWhere(&result, database.Where("username = ?", "user3"))
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(result))
 
-	err2 := m.FetchByWhere("tests", "username", map[string]interface{}{
-		"username = ?": "user3",
-	}, &result, map[string]interface{}{
-		OFFSET: 0,
-		LIMIT:  1,
-		ORDER:  "id desc",
-		GROUP:  "username",
-		HAVING: "username != ''",
-	})
+	err2 := m.FetchByWhere(
+		&result,
+		database.Where("username = ?", "user3"),
+		database.Limit(1),
+		database.Offset(0),
+		database.Order("id desc"),
+		database.Group("username"),
+		database.Having("username != ''"),
+	)
 	assert.NoError(t, err2)
 	assert.Equal(t, 1, len(result))
 
 	var newResult Test
-	err3 := m.FetchByWhere("tests", "username", map[string]interface{}{
-		"username = ?": "user0",
-	}, &newResult)
+	err3 := m.FetchByWhere(&newResult,
+		database.Where("username = ?", "user0"),
+	)
 	assert.NoError(t, err3)
 	assert.Equal(t, uint(0), newResult.ID)
 }
@@ -105,10 +111,11 @@ func TestModel_DeleteByWhere(t *testing.T) {
 	dbTest.Create([]Test{
 		{Username: "user4"},
 	})
-	m := NewModel(dbTest)
-	err := m.DeleteByWhere(&Test{}, map[string]interface{}{
-		"username = ?": "user4",
-	})
+	m := NewQuery(dbTest)
+	err := m.DeleteByWhere(
+		database.Table(Test{}),
+		database.Where("username = ?", "user4"),
+	)
 	assert.NoError(t, err)
 	var result []Test
 	dbTest.Model(Test{}).Where("username = ?", "user4").Find(&result)
@@ -123,10 +130,11 @@ func TestModel_UpdateByWhere(t *testing.T) {
 	var newData = Test{
 		Username: "user5",
 	}
-	m := NewModel(dbTest)
-	err := m.UpdateByWhere("tests", map[string]interface{}{
-		"username = ?": "user51",
-	}, newData)
+	m := NewQuery(dbTest)
+	err := m.UpdateByWhere(
+		newData,
+		database.Where("username = ?", "user51"),
+	)
 	assert.NoError(t, err)
 	var updateData []Test
 	dbTest.Model(updateData).Where("username = ?", "user5").Find(&updateData)
@@ -137,10 +145,12 @@ func TestModel_CountByWhere(t *testing.T) {
 	dbTest.Create(&Test{
 		Username: "user6",
 	})
-	m := NewModel(dbTest)
-	c, err := m.CountByWhere("tests", map[string]interface{}{
-		"username = ?": "user6",
-	})
+	m := NewQuery(dbTest)
+	var c int64
+	err := m.CountByWhere(&c,
+		database.Table(Test{}),
+		database.Where("username = ?", "user6"),
+	)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), c)
 }

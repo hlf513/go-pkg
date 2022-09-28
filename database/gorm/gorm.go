@@ -18,7 +18,8 @@ func Connect(opts ...Option) (*gorm.DB, error) {
 		options.Database,
 	)
 	// log level https://github.com/go-gorm/gorm/issues/3544
-	//db.Logger = logger.Default.LogMode(logger.Silent)
+	//database.Logger = logger.Default.LogMode(logger.Silent)
+	// todo driver configure
 	db, err := gorm.Open(mysql.Open(dsn), &options.GormConfig)
 	if err != nil {
 		return nil, err
