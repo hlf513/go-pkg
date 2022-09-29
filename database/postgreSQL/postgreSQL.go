@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"sync"
 )
 
-func Connect(opts ...Option) (*gorm.DB, error) {
+var dbs sync.Map
+
+func Connect(opts ...Option) error {
 	options := newOptions(opts...)
 	// refer https://gorm.io/zh_CN/docs/connecting_to_the_database.html#PostgreSQL
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=%s",
@@ -17,14 +21,25 @@ func Connect(opts ...Option) (*gorm.DB, error) {
 		options.Port,
 		options.TimeZone,
 	)
-	// log level https://github.com/go-gorm/gorm/issues/3544
-	//database.Logger = logger.Default.LogMode(logger.Silent)
+	var logLevel logger.LogLevel
+	switch options.LogLevel {
+	case Silent:
+		logLevel = logger.Silent
+	case Error:
+		logLevel = logger.Error
+	case Warn:
+		logLevel = logger.Warn
+	case Info:
+		logLevel = logger.Info
+	}
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
-	}), &gorm.Config{})
+	}), &gorm.Config{
+		Logger: logger.Default.LogMode(logLevel),
+	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// set connection pool
 	sqlDB, err := db.DB()
@@ -32,5 +47,20 @@ func Connect(opts ...Option) (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(options.MaxOpenConn)
 	sqlDB.SetConnMaxLifetime(options.MaxLifeTime)
 
-	return db, nil
+	dbs.Store(options.Name, db)
+
+	return nil
+}
+
+func GetDB(name ...string) *gorm.DB {
+	var key = "default"
+	if len(name) > 0 {
+		key = name[0]
+	}
+
+	if db, ok := dbs.Load(key); ok {
+		return db.(*gorm.DB)
+	}
+
+	return nil
 }

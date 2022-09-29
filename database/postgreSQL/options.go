@@ -15,6 +15,7 @@ type Option func(*Options)
 
 func newOptions(opts ...Option) Options {
 	opt := Options{
+		Name:        "default",
 		Host:        "127.0.0.1",
 		Port:        9920,
 		Username:    "user",
@@ -35,6 +36,7 @@ func newOptions(opts ...Option) Options {
 }
 
 type Options struct {
+	Name        string
 	Host        string
 	Port        int32
 	Username    string
@@ -45,7 +47,12 @@ type Options struct {
 	MaxLifeTime time.Duration
 	TimeZone    string
 	LogLevel    string
+}
 
+func Name(name string) Option {
+	return func(o *Options) {
+		o.Name = name
+	}
 }
 
 func TimeZone(tz string) Option {
