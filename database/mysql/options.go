@@ -1,14 +1,21 @@
 package mysql
 
 import (
-	"gorm.io/gorm"
 	"time"
+)
+
+const (
+	Silent = "silent"
+	Warn   = "warn"
+	Error  = "error"
+	Info   = "info"
 )
 
 type Option func(*Options)
 
 func newOptions(opts ...Option) Options {
 	opt := Options{
+		Name:        "default",
 		Host:        "127.0.0.1",
 		Port:        3306,
 		Username:    "user",
@@ -17,6 +24,7 @@ func newOptions(opts ...Option) Options {
 		MaxIdleConn: 10,
 		MaxOpenConn: 100,
 		MaxLifeTime: 1800 * time.Second,
+		LogLevel:    Silent,
 	}
 
 	for _, o := range opts {
@@ -27,6 +35,7 @@ func newOptions(opts ...Option) Options {
 }
 
 type Options struct {
+	Name        string
 	Host        string
 	Port        int32
 	Username    string
@@ -35,12 +44,18 @@ type Options struct {
 	MaxIdleConn int
 	MaxOpenConn int
 	MaxLifeTime time.Duration
-	GormConfig  gorm.Config
+	LogLevel    string
 }
 
-func GormConfig(c gorm.Config) Option {
+func Name(name string) Option {
 	return func(o *Options) {
-		o.GormConfig = c
+		o.Name = name
+	}
+}
+
+func LogLevel(level string) Option {
+	return func(o *Options) {
+		o.LogLevel = level
 	}
 }
 
@@ -90,3 +105,4 @@ func MaxLifeTime(t time.Duration) Option {
 		o.MaxLifeTime = t
 	}
 }
+

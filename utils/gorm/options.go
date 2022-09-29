@@ -1,6 +1,8 @@
-package database
+package gorm
 
-import "gorm.io/gorm/schema"
+import (
+	"gorm.io/gorm/schema"
+)
 
 type QueryOption func(*QueryOptions)
 
@@ -15,9 +17,10 @@ type QueryOptions struct {
 	Having          string
 	Offset          int
 	Limit           int
+	HardDelete      bool
 }
 
-func NewQueryOptions(opts ...QueryOption) QueryOptions {
+func newQueryOptions(opts ...QueryOption) QueryOptions {
 	var opt = QueryOptions{
 		BatchInsertSize: 1000,
 		Fields:          "*",
@@ -26,6 +29,12 @@ func NewQueryOptions(opts ...QueryOption) QueryOptions {
 		o(&opt)
 	}
 	return opt
+}
+
+func HardDelete() QueryOption {
+	return func(o *QueryOptions) {
+		o.HardDelete = true
+	}
 }
 
 func Table(t schema.Tabler) QueryOption {

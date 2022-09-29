@@ -1,8 +1,14 @@
 package sqlite
 
 import (
-	"gorm.io/gorm"
 	"time"
+)
+
+const (
+	Silent = "silent"
+	Warn   = "warn"
+	Error  = "error"
+	Info   = "info"
 )
 
 type Option func(*Options)
@@ -13,6 +19,7 @@ func newOptions(opts ...Option) Options {
 		MaxIdleConn: 10,
 		MaxOpenConn: 100,
 		MaxLifeTime: 1800 * time.Second,
+		LogLevel:    Silent,
 	}
 
 	for _, o := range opts {
@@ -27,18 +34,12 @@ type Options struct {
 	MaxIdleConn int
 	MaxOpenConn int
 	MaxLifeTime time.Duration
-	GormConfig  gorm.Config
+	LogLevel    string
 }
 
 func DSN(dsn string) Option {
 	return func(o *Options) {
 		o.DSN = dsn
-	}
-}
-
-func GormConfig(c gorm.Config) Option {
-	return func(o *Options) {
-		o.GormConfig = c
 	}
 }
 

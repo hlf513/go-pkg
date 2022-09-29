@@ -2,19 +2,17 @@ package gorm
 
 import (
 	"fmt"
-	"github.com/hlf513/go-pkg/database"
-	"github.com/hlf513/go-pkg/database/gorm/mysql"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/plugin/soft_delete"
 	"os"
 	"testing"
 	"time"
 )
 
-var (
-	dbTest *gorm.DB
-)
+var db *gorm.DB
 
 type Test struct {
 	ID        uint `gorm:"primarykey"`
@@ -31,22 +29,19 @@ func (t Test) TableName() string {
 
 func TestMain(m *testing.M) {
 	var err error
-	dbTest, err = mysql.Connect(
-		mysql.Host("host"),
-		mysql.Username("user"),
-		mysql.Password("pwd"),
-		mysql.Database("dbname"),
-	)
+	db, err = gorm.Open(mysql.Open("user:pwd@tcp(1.1.1.2:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	err = dbTest.AutoMigrate(&Test{})
+	err = db.AutoMigrate(&Test{})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	dbTest.Model(Test{}).Where("id > 0").Unscoped().Delete(&Test{})
+	db.Model(Test{}).Where("id > 0").Unscoped().Delete(&Test{})
 	retCode := m.Run()
 	os.Exit(retCode)
 }
@@ -55,7 +50,7 @@ func TestModel_Create(t *testing.T) {
 	var row = Test{
 		Username: "username",
 	}
-	err := NewQuery(dbTest).Create(&row)
+	err := NewQuery(db).Create(&row)
 	assert.NoError(t, err)
 	assert.Equal(t, true, row.ID > 0)
 }
@@ -65,92 +60,99 @@ func TestModel_BatchInsert(t *testing.T) {
 		{Username: "user1"},
 		{Username: "user2"},
 	}
-	m := NewQuery(dbTest)
-	err := m.BatchInsert(rows,
-		database.Table(Test{}),
-		database.BatchInsertSize(1),
-	)
+	err := NewQuery(db).BatchInsert(Test{}, rows, BatchInsertSize(1))
 	assert.NoError(t, err)
 	for _, item := range rows {
 		assert.Equal(t, true, item.ID > 0)
 	}
 }
 
-func TestModel_FetchByWhere(t *testing.T) {
-	dbTest.Create([]Test{
+func TestModel_FindByWhere(t *testing.T) {
+	db.Create([]Test{
 		{Username: "user3"},
 		{Username: "user3"},
 	})
 
 	var result []Test
-	m := NewQuery(dbTest)
-	err := m.FetchByWhere(&result, database.Where("username = ?", "user3"))
+	m := NewQuery(db)
+	err := m.FindByWhere(&result, Where("username = ?", "user3"))
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(result))
 
-	err2 := m.FetchByWhere(
+	err2 := m.FindByWhere(
 		&result,
-		database.Where("username = ?", "user3"),
-		database.Limit(1),
-		database.Offset(0),
-		database.Order("id desc"),
-		database.Group("username"),
-		database.Having("username != ''"),
+		Where("username = ?", "user3"),
+		Limit(1),
+		Offset(0),
+		Order("id desc"),
+		Group("username"),
+		Having("username != ''"),
 	)
 	assert.NoError(t, err2)
 	assert.Equal(t, 1, len(result))
 
 	var newResult Test
-	err3 := m.FetchByWhere(&newResult,
-		database.Where("username = ?", "user0"),
+	err3 := m.ScanByWhere(Test{}, &newResult,
+		Where("username = ?", "user3"),
 	)
 	assert.NoError(t, err3)
-	assert.Equal(t, uint(0), newResult.ID)
+	assert.Equal(t, true, newResult.ID > 0)
+
 }
 
 func TestModel_DeleteByWhere(t *testing.T) {
-	dbTest.Create([]Test{
+	db.Create([]Test{
 		{Username: "user4"},
 	})
-	m := NewQuery(dbTest)
+	m := NewQuery(db)
 	err := m.DeleteByWhere(
-		database.Table(Test{}),
-		database.Where("username = ?", "user4"),
+		Test{},
+		Where("username = ?", "user4"),
 	)
 	assert.NoError(t, err)
 	var result []Test
-	dbTest.Model(Test{}).Where("username = ?", "user4").Find(&result)
+	db.Model(Test{}).Where("username = ?", "user4").Find(&result)
+	assert.Equal(t, 0, len(result))
+
+	db.Model(Test{}).Unscoped().Where("username = ?", "user4").Find(&result)
+	assert.Equal(t, 1, len(result))
+
+	err = m.DeleteByWhere(Test{}, Where("username = ?", "user4"), HardDelete())
+	assert.NoError(t, err)
+
+	db.Model(Test{}).Unscoped().Where("username = ?", "user4").Find(&result)
 	assert.Equal(t, 0, len(result))
 }
 
 func TestModel_UpdateByWhere(t *testing.T) {
-	dbTest.Create(&Test{
+	db.Create(&Test{
 		Username: "user51",
 	})
 
 	var newData = Test{
 		Username: "user5",
 	}
-	m := NewQuery(dbTest)
+	m := NewQuery(db)
 	err := m.UpdateByWhere(
 		newData,
-		database.Where("username = ?", "user51"),
+		Where("username = ?", "user51"),
 	)
 	assert.NoError(t, err)
 	var updateData []Test
-	dbTest.Model(updateData).Where("username = ?", "user5").Find(&updateData)
+	db.Model(updateData).Where("username = ?", "user5").Find(&updateData)
 	assert.Equal(t, 1, len(updateData))
 }
 
 func TestModel_CountByWhere(t *testing.T) {
-	dbTest.Create(&Test{
+	db.Create(&Test{
 		Username: "user6",
 	})
-	m := NewQuery(dbTest)
+	m := NewQuery(db)
 	var c int64
-	err := m.CountByWhere(&c,
-		database.Table(Test{}),
-		database.Where("username = ?", "user6"),
+	err := m.CountByWhere(
+		Test{},
+		&c,
+		Where("username = ?", "user6"),
 	)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), c)

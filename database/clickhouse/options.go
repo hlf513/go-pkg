@@ -1,23 +1,31 @@
-package postgresSQL
+package clickhouse
 
 import (
-	"gorm.io/gorm"
 	"time"
+)
+
+const (
+	Silent = "silent"
+	Warn   = "warn"
+	Error  = "error"
+	Info   = "info"
 )
 
 type Option func(*Options)
 
 func newOptions(opts ...Option) Options {
 	opt := Options{
-		Host:        "127.0.0.1",
-		Port:        9920,
-		Username:    "user",
-		Password:    "pwd",
-		Database:    "dbname",
-		MaxIdleConn: 10,
-		MaxOpenConn: 100,
-		MaxLifeTime: 1800 * time.Second,
-		TimeZone:    "Asia/Shanghai",
+		Host:         "127.0.0.1",
+		Port:         3306,
+		Username:     "user",
+		Password:     "pwd",
+		Database:     "dbname",
+		ReadTimeout:  10,
+		WriteTimeout: 20,
+		MaxIdleConn:  10,
+		MaxOpenConn:  100,
+		MaxLifeTime:  1800 * time.Second,
+		LogLevel:     Silent,
 	}
 
 	for _, o := range opts {
@@ -28,27 +36,28 @@ func newOptions(opts ...Option) Options {
 }
 
 type Options struct {
-	Host        string
-	Port        int32
-	Username    string
-	Password    string
-	Database    string
-	MaxIdleConn int
-	MaxOpenConn int
-	MaxLifeTime time.Duration
-	TimeZone    string
-	GormConfig  gorm.Config
+	Host         string
+	Port         int32
+	Username     string
+	Password     string
+	Database     string
+	MaxIdleConn  int
+	MaxOpenConn  int
+	MaxLifeTime  time.Duration
+	ReadTimeout  int
+	WriteTimeout int
+	LogLevel     string
 }
 
-func TimeZone(tz string) Option {
+func ReadTimeout(t int) Option {
 	return func(o *Options) {
-		o.TimeZone = tz
+		o.ReadTimeout = t
 	}
 }
 
-func GormConfig(c gorm.Config) Option {
+func WriteTimeout(t int) Option {
 	return func(o *Options) {
-		o.GormConfig = c
+		o.WriteTimeout = t
 	}
 }
 
