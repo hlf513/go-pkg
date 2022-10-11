@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"log"
 	"sync"
 )
 
@@ -60,6 +61,8 @@ func GetDB(name ...string) *gorm.DB {
 	if db, ok := dbs.Load(key); ok {
 		return db.(*gorm.DB)
 	}
+
+	log.Fatal("clickhouse instance[" + key + "] not found")
 
 	return nil
 }

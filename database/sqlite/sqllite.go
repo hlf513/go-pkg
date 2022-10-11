@@ -4,6 +4,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"log"
 	"sync"
 )
 
@@ -49,6 +50,8 @@ func GetDB(name ...string) *gorm.DB {
 	if db, ok := dbs.Load(key); ok {
 		return db.(*gorm.DB)
 	}
+
+	log.Fatal("sqlite instance[" + key + "] not found")
 
 	return nil
 }
