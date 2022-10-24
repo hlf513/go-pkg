@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/gomodule/redigo v1.8.9
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/stretchr/testify v1.8.0
 	gorm.io/driver/clickhouse v0.4.2
 	gorm.io/driver/mysql v1.3.6
