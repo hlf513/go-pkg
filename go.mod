@@ -1,22 +1,31 @@
 module github.com/hlf513/go-pkg
 
-go 1.17
+go 1.19
 
 require (
 	github.com/gomodule/redigo v1.8.9
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/stretchr/testify v1.8.0
-	gorm.io/driver/clickhouse v0.4.2
-	gorm.io/driver/mysql v1.3.6
-	gorm.io/driver/postgres v1.3.10
-	gorm.io/driver/sqlite v1.1.3
-	gorm.io/gorm v1.23.9
+	github.com/stretchr/testify v1.8.1
+	go.opentelemetry.io/otel v1.11.1
+	go.opentelemetry.io/otel/exporters/jaeger v1.11.1
+	go.opentelemetry.io/otel/sdk v1.11.1
+	gorm.io/driver/clickhouse v0.5.0
+	gorm.io/driver/mysql v1.4.3
+	gorm.io/driver/postgres v1.4.5
+	gorm.io/driver/sqlite v1.4.3
+	gorm.io/gorm v1.24.1-0.20221019064659-5dd2bb482755
 	gorm.io/plugin/soft_delete v1.2.0
 )
 
 require (
-	github.com/ClickHouse/clickhouse-go/v2 v2.2.0 // indirect
+	github.com/ClickHouse/ch-go v0.48.0 // indirect
+	github.com/ClickHouse/clickhouse-go/v2 v2.3.0 // indirect
+	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-faster/city v1.0.1 // indirect
+	github.com/go-faster/errors v0.6.1 // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
@@ -30,17 +39,17 @@ require (
 	github.com/jackc/pgx/v4 v4.17.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/kr/text v0.2.0 // indirect
-	github.com/mattn/go-sqlite3 v1.14.3 // indirect
-	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/klauspost/compress v1.15.11 // indirect
+	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/paulmach/orb v0.7.1 // indirect
-	github.com/pierrec/lz4/v4 v4.1.15 // indirect
+	github.com/pierrec/lz4/v4 v4.1.17 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
-	go.opentelemetry.io/otel v1.7.0 // indirect
-	go.opentelemetry.io/otel/trace v1.7.0 // indirect
+	go.opentelemetry.io/otel/trace v1.11.1 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

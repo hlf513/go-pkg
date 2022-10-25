@@ -1,4 +1,4 @@
-package redis
+package redigo
 
 import (
 	"github.com/gomodule/redigo/redis"
@@ -72,7 +72,7 @@ func GetConn(name ...string) redis.Conn {
 		return db.(*redis.Pool).Get()
 	}
 
-	log.Fatal("redis instance[" + key + "] not found")
+	log.Fatal("redigo instance[" + key + "] not found")
 
 	return nil
 }

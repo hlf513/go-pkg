@@ -6,8 +6,7 @@ import (
 )
 
 func TestConnect(t *testing.T) {
-	err := Connect()
-	assert.NoError(t, err)
+	Connect()
 
 	var result int
 	GetDB().Select("1+1").Table("user").Find(&result)

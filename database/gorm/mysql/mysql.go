@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ import (
 
 var dbs sync.Map
 
-func Connect(opts ...Option) error {
+func Connect(opts ...Option) {
 	options := newOptions(opts...)
 	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
 	dsn := fmt.Sprintf(
@@ -39,7 +40,7 @@ func Connect(opts ...Option) error {
 		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
-		return err
+		log.Fatal("[MySQL] connect error: ", err.Error())
 	}
 	// set connection pool
 	sqlDB, err := db.DB()
@@ -47,18 +48,19 @@ func Connect(opts ...Option) error {
 	sqlDB.SetMaxOpenConns(options.MaxOpenConn)
 	sqlDB.SetConnMaxLifetime(options.MaxLifeTime)
 
-	dbs.Store(options.Name, db)
+	AddGormCallbacks(db)
 
-	return nil
+	dbs.Store(options.Name, db)
 }
 
-func GetDB(name ...string) *gorm.DB {
+func GetDB(ctx context.Context, name ...string) *gorm.DB {
 	var key = "default"
 	if len(name) > 0 {
 		key = name[0]
 	}
 
 	if db, ok := dbs.Load(key); ok {
+		return SetSpanToGorm(ctx, db.(*gorm.DB))
 		return db.(*gorm.DB)
 	}
 
