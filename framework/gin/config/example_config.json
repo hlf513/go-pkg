@@ -1,0 +1,53 @@
+{
+  "gin": {
+    "name": "admin",
+    "port": ":8080",
+    "env": "dev",
+    "mode": "debug"
+  },
+  "zap": {
+    "log_path": "/tmp/gin.log",
+    "log_level": "debug",
+    "file_max_size": 1,
+    "file_max_backups": 30,
+    "file_max_age": 7,
+    "file_compress": false
+  },
+  "jaeger": {
+    "name": "gin",
+    "url": "http://localhost:14268/api/traces",
+    "log": {
+      "trace": true,
+      "file": false
+    }
+  },
+  "openObserve": {
+    "name": "gin",
+    "url": "http://localhost:5080/api/default/traces",
+    "auth": "cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM=",
+    "log": {
+      "trace": true,
+      "file": false
+    }
+  },
+  "mysql": [
+    {
+      "name": "default",
+      "host": "127.0.0.1",
+      "port": 3306,
+      "username": "root",
+      "password": "123123",
+      "database": "cash_apply_mexico",
+      "max_idle_conn": 10,
+      "max_open_conn": 100,
+      "log_level": "info"
+    }
+  ],
+  "redis": [
+    {
+      "name": "default",
+      "host": "127.0.0.1:6379",
+      "trace": true
+    }
+  ]
+}
