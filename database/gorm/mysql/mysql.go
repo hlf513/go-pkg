@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/opentelemetry/tracing"
+	"gorm.io/plugin/prometheus"
 	"log"
 	"sync"
 	"time"
@@ -51,11 +52,14 @@ func Connect(opts ...Option) error {
 	sqlDB.SetConnMaxLifetime(time.Duration(options.MaxLifeTime) * time.Second)
 
 	if options.Trace {
-		var tracingPlugin = tracing.NewPlugin()
-		if !options.Metrics {
-			tracingPlugin = tracing.NewPlugin(tracing.WithoutMetrics())
+		if err = db.Use(tracing.NewPlugin()); err != nil {
+			return err
 		}
-		if err := db.Use(tracingPlugin); err != nil {
+	}
+	if options.Metrics {
+		if err = db.Use(prometheus.New(prometheus.Config{
+			StartServer: true,
+		})); err != nil {
 			return err
 		}
 	}
