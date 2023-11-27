@@ -41,6 +41,19 @@ type Options struct {
 	MaxOpenConn int    `json:"max_open_conn" mapstructure:"max_open_conn"`
 	LogLevel    string `json:"log_level" mapstructure:"log_level"`
 	MaxLifeTime int32  `json:"max_life_time" mapstructure:"max_life_time"`
+	Metrics     bool   `json:"metrics" mapstructure:"metrics"`
+	Trace       bool   `json:"trace" mapstructure:"trace"`
+}
+
+func Metrics(b bool) Option {
+	return func(o *Options) {
+		o.Metrics = b
+	}
+}
+func Trace(b bool) Option {
+	return func(o *Options) {
+		o.Trace = b
+	}
 }
 
 func Name(name string) Option {

@@ -50,8 +50,14 @@ func Connect(opts ...Option) error {
 	sqlDB.SetMaxOpenConns(options.MaxOpenConn)
 	sqlDB.SetConnMaxLifetime(time.Duration(options.MaxLifeTime) * time.Second)
 
-	if err := db.Use(tracing.NewPlugin(tracing.WithoutMetrics())); err != nil {
-		return err
+	if options.Trace {
+		var tracingPlugin = tracing.NewPlugin()
+		if !options.Metrics {
+			tracingPlugin = tracing.NewPlugin(tracing.WithoutMetrics())
+		}
+		if err := db.Use(tracingPlugin); err != nil {
+			return err
+		}
 	}
 
 	dbs.Store(options.Name, db)

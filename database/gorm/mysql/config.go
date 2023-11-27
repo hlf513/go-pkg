@@ -26,6 +26,9 @@ func (c Config) Init() error {
 			LogLevel(m.LogLevel),
 			MaxIdleConn(m.MaxIdleConn),
 			MaxOpenConn(m.MaxOpenConn),
+			MaxLifeTime(m.MaxLifeTime),
+			Metrics(m.Metrics),
+			Trace(m.Trace),
 		); err != nil {
 			log.Fatalf("[MySQL] connect errors: %s; configure: %v", err.Error(), m)
 			return err
