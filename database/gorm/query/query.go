@@ -21,7 +21,7 @@ type Query interface {
 	SearchAll(table schema.Tabler, total *int64, list any, page, limit int, opt ...Option) error
 }
 
-func NewQuery(db *gorm.DB) Query {
+func New(db *gorm.DB) Query {
 	return &query{
 		db:   db,
 		opts: newOptions(),
