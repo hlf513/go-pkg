@@ -6,7 +6,7 @@ import (
 
 func Run(ctx context.Context, opts ...Option) []error {
 	opt := NewOptions(opts...)
-	var cn = make(chan struct{}, opt.Concurrency)
+	var cn = make(chan struct{}, opt.ConcurrentNum)
 	var errors []error
 
 	cn <- struct{}{}

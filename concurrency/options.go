@@ -9,15 +9,15 @@ type Tasker interface {
 type Option func(*Options)
 
 type Options struct {
-	Concurrency int32
-	Tasks       []Tasker
-	WG          *sync.WaitGroup
+	ConcurrentNum int32
+	Tasks         []Tasker
+	WG            *sync.WaitGroup
 }
 
 func NewOptions(opts ...Option) Options {
 	opt := Options{
-		Concurrency: 1,
-		WG:          new(sync.WaitGroup),
+		ConcurrentNum: 1,
+		WG:            new(sync.WaitGroup),
 	}
 	for _, o := range opts {
 		o(&opt)
@@ -26,9 +26,9 @@ func NewOptions(opts ...Option) Options {
 	return opt
 }
 
-func Concurrency(n int32) Option {
+func ConcurrentNum(n int32) Option {
 	return func(o *Options) {
-		o.Concurrency = n
+		o.ConcurrentNum = n
 	}
 }
 

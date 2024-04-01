@@ -31,8 +31,8 @@ func TestRun(t *testing.T) {
 	// run concurrent tasks
 	Run(
 		context.Background(),
-		Concurrency(100), // set concurrent num
-		Tasks(tasks),     // register concurrent tasks
+		ConcurrentNum(100), // set concurrent num
+		Tasks(tasks),       // register concurrent tasks
 	)
 
 	// check concurrent tasks
