@@ -8,6 +8,7 @@ func Run(ctx context.Context, opts ...Option) []error {
 	opt := NewOptions(opts...)
 	var cn = make(chan struct{}, opt.ConcurrentNum)
 	var errors []error
+	defer close(cn)
 
 	cn <- struct{}{}
 
