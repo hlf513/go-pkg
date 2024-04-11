@@ -1,4 +1,4 @@
-package concurrency
+package concurrent
 
 import (
 	"context"
@@ -12,7 +12,7 @@ type Task struct {
 	id int
 }
 
-func (t *Task) Run() error {
+func (t *Task) Execute() error {
 	atomic.AddInt32(&cnt, 1)
 	return nil
 }
@@ -29,7 +29,7 @@ func TestRun(t *testing.T) {
 	}
 
 	// run concurrent tasks
-	Run(
+	Executor(
 		context.Background(),
 		ConcurrentNum(100), // set concurrent num
 		Tasks(tasks),       // register concurrent tasks

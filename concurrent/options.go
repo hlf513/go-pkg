@@ -1,17 +1,18 @@
-package concurrency
+package concurrent
 
 import "sync"
 
 type Tasker interface {
-	Run() error
+	Execute() error
 }
 
 type Option func(*Options)
 
 type Options struct {
-	ConcurrentNum int32
-	Tasks         []Tasker
-	WG            *sync.WaitGroup
+	ConcurrentNum   int32
+	Tasks           []Tasker
+	WG              *sync.WaitGroup
+	ShowProgressbar bool
 }
 
 func NewOptions(opts ...Option) Options {
@@ -41,5 +42,11 @@ func Tasks(t []Tasker) Option {
 func WG(wg *sync.WaitGroup) Option {
 	return func(o *Options) {
 		o.WG = wg
+	}
+}
+
+func ShowProgressbar() Option {
+	return func(o *Options) {
+		o.ShowProgressbar = true
 	}
 }
