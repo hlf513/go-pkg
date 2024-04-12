@@ -1,24 +1,24 @@
 package concurrent
 
-import "sync"
+import (
+	"context"
+)
 
 type Tasker interface {
-	Execute() error
+	Execute(ctx context.Context) error
 }
 
 type Option func(*Options)
 
 type Options struct {
-	ConcurrentNum   int32
+	MaxG            int
 	Tasks           []Tasker
-	WG              *sync.WaitGroup
 	ShowProgressbar bool
 }
 
 func NewOptions(opts ...Option) Options {
 	opt := Options{
-		ConcurrentNum: 1,
-		WG:            new(sync.WaitGroup),
+		MaxG: 1,
 	}
 	for _, o := range opts {
 		o(&opt)
@@ -27,21 +27,15 @@ func NewOptions(opts ...Option) Options {
 	return opt
 }
 
-func ConcurrentNum(n int32) Option {
+func MaxG(n int) Option {
 	return func(o *Options) {
-		o.ConcurrentNum = n
+		o.MaxG = n
 	}
 }
 
 func Tasks(t []Tasker) Option {
 	return func(o *Options) {
 		o.Tasks = t
-	}
-}
-
-func WG(wg *sync.WaitGroup) Option {
-	return func(o *Options) {
-		o.WG = wg
 	}
 }
 

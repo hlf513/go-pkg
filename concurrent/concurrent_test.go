@@ -12,7 +12,7 @@ type Task struct {
 	id int
 }
 
-func (t *Task) Execute() error {
+func (t *Task) Execute(context.Context) error {
 	atomic.AddInt32(&cnt, 1)
 	return nil
 }
@@ -29,10 +29,10 @@ func TestRun(t *testing.T) {
 	}
 
 	// run concurrent tasks
-	Executor(
+	ExecutorInterrupt(
 		context.Background(),
-		ConcurrentNum(100), // set concurrent num
-		Tasks(tasks),       // register concurrent tasks
+		MaxG(100),    // set concurrent num
+		Tasks(tasks), // register concurrent tasks
 	)
 
 	// check concurrent tasks
