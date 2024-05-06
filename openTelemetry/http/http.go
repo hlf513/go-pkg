@@ -3,13 +3,14 @@ package http
 import (
 	"bytes"
 	"context"
+	"io"
+	"net/http"
+	"strings"
+
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"io"
-	"net/http"
-	"strings"
 )
 
 func Request(ctx context.Context, opt ...Option) (responseBody []byte, httpCode int, err error) {
@@ -56,13 +57,13 @@ func Request(ctx context.Context, opt ...Option) (responseBody []byte, httpCode 
 	if response, err = client.Do(request); err != nil {
 		return
 	}
+	defer response.Body.Close()
 
 	// response
 	httpCode = response.StatusCode
 	if responseBody, err = io.ReadAll(response.Body); err != nil {
 		return
 	}
-	defer response.Body.Close()
 
 	return
 }
