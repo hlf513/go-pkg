@@ -5,21 +5,22 @@ import (
 	"errors"
 )
 
+// Flower: NodeExecutor(Tasker) -> NodeExecutor(Tasker) ...
+type Flower interface {
+	Run(ctx context.Context) error
+}
+
 type Flow struct {
 	opts             *FlowOptions
 	executedExecutor map[NodeExecutor]struct{}
 }
 
-func NewFlow(ctx context.Context, opts ...FlowOption) *Flow {
+func NewFlow(ctx context.Context, opts ...FlowOption) Flower {
 	opt := NewFlowOptions(opts...)
 	return &Flow{opts: opt}
 }
 
 func (f *Flow) Run(ctx context.Context) error {
-	if f.opts.Task == nil {
-		return errors.New("task is not set")
-	}
-
 	var (
 		executor   NodeExecutor
 		err        error
@@ -35,11 +36,34 @@ func (f *Flow) Run(ctx context.Context) error {
 		if err = f.execexecutor(ctx, executor); err != nil {
 			return err
 		}
-		if flowStatus, executor, err = f.setNextNode(flowStatus); err != nil {
+
+		nextStatus := f.opts.Task.GetStatus()
+
+		// equal means the status is not changed by the executor, so we need to set the next status
+		if flowStatus == nextStatus {
+			nextStatus, err = f.getNextNodeStatus(flowStatus)
+			if err != nil {
+				return err
+			}
+			if err := f.opts.Task.SetStatus(nextStatus); err != nil {
+				return err
+			}
+		}
+		// for next loop
+		flowStatus = nextStatus
+
+		if executor, err = f.setNextNode(nextStatus); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (f *Flow) getNextNodeStatus(status FlowStatus) (FlowStatus, error) {
+	if nextStatus, ok := f.opts.StatusTrans[status]; ok {
+		return nextStatus, nil
+	}
+	return FlowStatus(0), errors.New("failed to find next executor status in transition configuration")
 }
 
 func (f *Flow) init() error {
@@ -71,23 +95,12 @@ func (f *Flow) getNodeExecutor(status FlowStatus) (NodeExecutor, error) {
 	return nil, nil
 }
 
-func (f *Flow) getNextNodeStatus(status FlowStatus) (FlowStatus, error) {
-	if nextStatus, ok := f.opts.StatusTrans[status]; ok {
-		return nextStatus, nil
-	}
-	return FlowStatus(0), errors.New("failed to find next executor status in transition configuration")
-}
-
-func (f *Flow) setNextNode(flowStatus FlowStatus) (FlowStatus, NodeExecutor, error) {
-	nextStatus, err := f.getNextNodeStatus(flowStatus)
+func (f *Flow) setNextNode(flowStatus FlowStatus) (NodeExecutor, error) {
+	nextExecutor, err := f.getNodeExecutor(flowStatus)
 	if err != nil {
-		return FlowStatus(0), nil, err
+		return nil, err
 	}
-	nextExecutor, err := f.getNodeExecutor(nextStatus)
-	if err != nil {
-		return FlowStatus(0), nil, err
-	}
-	return nextStatus, nextExecutor, nil
+	return nextExecutor, nil
 }
 
 func (f *Flow) execexecutor(ctx context.Context, executor NodeExecutor) error {

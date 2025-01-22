@@ -42,11 +42,21 @@ func (e *twoExecutor) Execute(ctx context.Context, task Tasker) error {
 	return nil
 }
 
+func NewTask() Tasker {
+	return &task{status: FlowStatus(0)}
+}
+
 type task struct {
+	status FlowStatus
 }
 
 func (t *task) GetStatus() FlowStatus {
-	return FlowStatus(0)
+	return t.status
+}
+
+func (t *task) SetStatus(status FlowStatus) error {
+	t.status = status
+	return nil
 }
 
 func TestFlow(t *testing.T) {
@@ -59,7 +69,7 @@ func TestFlow(t *testing.T) {
 			FlowStatus(0): FlowStatus(1),
 			FlowStatus(1): FlowStatus(2),
 		}),
-		WithTask(new(task)),
+		WithTask(NewTask()),
 	)
 
 	err := flow.Run(context.Background())

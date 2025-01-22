@@ -1,18 +1,6 @@
 package flow
 
-import (
-	"context"
-)
-
 type FlowStatus int
-
-type Tasker interface {
-	GetStatus() FlowStatus
-}
-
-type NodeExecutor interface {
-	Execute(ctx context.Context, task Tasker) error
-}
 
 type FlowOptions struct {
 	StatusTrans   map[FlowStatus]FlowStatus
@@ -30,6 +18,12 @@ func NewFlowOptions(opts ...FlowOption) *FlowOptions {
 	return f
 }
 
+func WithTask(task Tasker) FlowOption {
+	return func(f *FlowOptions) {
+		f.Task = task
+	}
+}
+
 func WithNodeExecutors(NodeExecutors map[FlowStatus]NodeExecutor) FlowOption {
 	return func(f *FlowOptions) {
 		f.NodeExecutors = NodeExecutors
@@ -39,11 +33,5 @@ func WithNodeExecutors(NodeExecutors map[FlowStatus]NodeExecutor) FlowOption {
 func WithStatusTrans(statusTrans map[FlowStatus]FlowStatus) FlowOption {
 	return func(f *FlowOptions) {
 		f.StatusTrans = statusTrans
-	}
-}
-
-func WithTask(task Tasker) FlowOption {
-	return func(f *FlowOptions) {
-		f.Task = task
 	}
 }
