@@ -15,10 +15,15 @@ func NewFlow(ctx context.Context, opts ...FlowOption) *Flow {
 	return &Flow{opts: opt}
 }
 
-func (f *Flow) Run(ctx context.Context, flowStatus FlowStatus) error {
+func (f *Flow) Run(ctx context.Context) error {
+	if f.opts.Task == nil {
+		return errors.New("task is not set")
+	}
+
 	var (
-		executor NodeExecutor
-		err      error
+		executor   NodeExecutor
+		err        error
+		flowStatus = f.opts.Task.GetStatus()
 	)
 	if err = f.init(); err != nil {
 		return err
@@ -90,7 +95,7 @@ func (f *Flow) execexecutor(ctx context.Context, executor NodeExecutor) error {
 	if err = f.isExecutedExecutor(executor); err != nil {
 		return err
 	}
-	if err = executor.Execute(ctx); err != nil {
+	if err = executor.Execute(ctx, f.opts.Task); err != nil {
 		return err
 	}
 	return f.addExecutedExecutor(executor)

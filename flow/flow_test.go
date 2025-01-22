@@ -24,7 +24,7 @@ type oneExecutor struct {
 	opts *oneExecutorOptions
 }
 
-func (e *oneExecutor) Execute(ctx context.Context) error {
+func (e *oneExecutor) Execute(ctx context.Context, task Tasker) error {
 	fmt.Println("OneExecutor")
 	return nil
 }
@@ -37,9 +37,16 @@ func newOneExecutor(opts ...oneExecutorOption) *oneExecutor {
 type twoExecutor struct {
 }
 
-func (e *twoExecutor) Execute(ctx context.Context) error {
+func (e *twoExecutor) Execute(ctx context.Context, task Tasker) error {
 	fmt.Println("TwoExecutor")
 	return nil
+}
+
+type task struct {
+}
+
+func (t *task) GetStatus() FlowStatus {
+	return FlowStatus(0)
 }
 
 func TestFlow(t *testing.T) {
@@ -52,9 +59,10 @@ func TestFlow(t *testing.T) {
 			FlowStatus(0): FlowStatus(1),
 			FlowStatus(1): FlowStatus(2),
 		}),
+		WithTask(new(task)),
 	)
 
-	err := flow.Run(context.Background(), FlowStatus(0))
+	err := flow.Run(context.Background())
 	if err != nil {
 		t.Error(err)
 	}

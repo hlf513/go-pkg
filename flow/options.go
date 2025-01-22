@@ -6,13 +6,18 @@ import (
 
 type FlowStatus int
 
+type Tasker interface {
+	GetStatus() FlowStatus
+}
+
 type NodeExecutor interface {
-	Execute(ctx context.Context) error
+	Execute(ctx context.Context, task Tasker) error
 }
 
 type FlowOptions struct {
 	StatusTrans   map[FlowStatus]FlowStatus
 	NodeExecutors map[FlowStatus]NodeExecutor
+	Task          Tasker
 }
 
 type FlowOption func(*FlowOptions)
@@ -34,5 +39,11 @@ func WithNodeExecutors(NodeExecutors map[FlowStatus]NodeExecutor) FlowOption {
 func WithStatusTrans(statusTrans map[FlowStatus]FlowStatus) FlowOption {
 	return func(f *FlowOptions) {
 		f.StatusTrans = statusTrans
+	}
+}
+
+func WithTask(task Tasker) FlowOption {
+	return func(f *FlowOptions) {
+		f.Task = task
 	}
 }
